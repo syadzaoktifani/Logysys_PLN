@@ -20,7 +20,8 @@ export default function Login() {
     setErrorMsg('');
 
     try {
-      const res = await fetch('/api/login', {
+      // Ubah kembali menggunakan URL domain backend Vercel secara langsung
+      const res = await fetch('https://logysys-pln.vercel.app/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
@@ -28,7 +29,7 @@ export default function Login() {
 
       const result = await res.json();
 
-      if (result.status === 'success') {
+      if (res.ok && result.status === 'success') {
         sessionStorage.setItem('isLoggedIn', 'true');
         sessionStorage.setItem('user', JSON.stringify(result.user));
         navigate('/');
