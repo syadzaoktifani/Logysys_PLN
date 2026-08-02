@@ -80,7 +80,7 @@ export default function Home() {
     setIsChatLoading(true);
 
     try {
-      const response = await fetch('http://localhost:5000/api/gemini-chat', {
+      const response = await fetch('https://logysys-pln.vercel.app/api/login/api/gemini-chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: userMessage })
@@ -142,7 +142,7 @@ export default function Home() {
     const fetchTopMaterials = async () => {
       setIsSyncing(true);
       try {
-        const response = await fetch('http://localhost:5000/api/top-materials');
+        const response = await fetch('https://logysys-pln.vercel.app/api/login/api/top-materials');
         const result = await response.json();
         if (result.status === 'success') {
           setTopKeluarData(result.data.keluar || []);
@@ -172,7 +172,7 @@ export default function Home() {
       setIsSyncing(true);
       try {
         // Fetch Top Materials
-        const resTop = await fetch('http://localhost:5000/api/top-materials');
+        const resTop = await fetch('https://logysys-pln.vercel.app/api/login/api/top-materials');
         const resultTop = await resTop.json();
         if (resultTop.status === 'success') {
           setTopKeluarData(resultTop.data.keluar || []);
@@ -181,7 +181,7 @@ export default function Home() {
         }
 
         // Fetch Bon Pinjam Realtime
-        const resBon = await fetch('http://localhost:5000/api/bon-pinjam');
+        const resBon = await fetch('https://logysys-pln.vercel.app/api/login/api/bon-pinjam');
         const resultBon = await resBon.json();
         if (resultBon.status === 'success') {
           setBonList(resultBon.data || []);
@@ -232,7 +232,7 @@ const handleSaveEdit = async (e) => {
 
   setIsSubmittingEdit(true);
   try {
-    const response = await fetch('http://localhost:5000/api/update-bon-pinjam', {
+    const response = await fetch('https://logysys-pln.vercel.app/api/login/api/update-bon-pinjam', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
