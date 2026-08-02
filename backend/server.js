@@ -335,4 +335,9 @@ app.post('/api/update-bon-pinjam', async (req, res) => {
     }
 });
 
-app.listen(5000, () => console.log('🚀 Server otomasi berjalan di port 5000'));
+if (process.env.NODE_ENV !== 'production') {
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () => console.log(`🚀 Server lokal berjalan di port ${PORT}`));
+}
+
+module.exports = app;
