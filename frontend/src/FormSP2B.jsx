@@ -117,7 +117,7 @@ export default function FormMasukSP2B() {
       // 4. Tambahkan targetSheet untuk API Node.js
       const payload = { ...dataYangDikirim, targetSheet: 'MaterialMasukSP2B' };
 
-      const res = await fetch('http://localhost:5000/api/input-manual', {
+      const res = await fetch('https://logysys-pln.vercel.app/api/login/api/input-manual', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
