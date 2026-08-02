@@ -1,27 +1,40 @@
+import dotenv from 'dotenv';
+dotenv.config(); // 1. WAJIB DI BARIS PALING ATAS
 
-require('dotenv').config(); // 1. WAJIB DI BARIS PALING ATAS
-const express = require('express');
-const cors = require('cors');
-const multer = require('multer');
-const pdfParse = require('pdf-parse');
-const { google } = require('googleapis');
-const { GoogleGenAI } = require('@google/genai');
+import express from 'express';
+import cors from 'cors';
+import multer from 'multer';
+import pdfParse from 'pdf-parse';
+import { google } from 'googleapis';
+import bcrypt from 'bcrypt';
+import { Mistral } from '@mistralai/mistralai';
 
 const app = express();
-app.use(cors());
+
+// CORS hanya izinkan dari domain frontend (bukan semua origin)
+app.use(cors({
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173'
+}));
 app.use(express.json());
 
 const upload = multer({ storage: multer.memoryStorage() });
-
-const { Mistral } = require('@mistralai/mistralai');
 
 // Inisialisasi Mistral otomatis membaca MISTRAL_API_KEY dari .env
 const apiKey = process.env.MISTRAL_API_KEY;
 const mistral = new Mistral({ apiKey: apiKey });
 
-// AMBIL DARI VARIABEL LINGKUNGAN (.env)
+// Pindah nilai sensitif ke environment variable
 const GAS_URL = process.env.GAS_URL;
 const SPREADSHEET_ID = process.env.SPREADSHEET_ID;
+
+// Helper: buat GoogleAuth menggunakan env var GOOGLE_CREDENTIALS
+// Tidak lagi membaca file credentials.json dari disk
+const createGoogleAuth = (scopes) => {
+    return new google.auth.GoogleAuth({
+        credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS),
+        scopes: scopes,
+    });
+};
 
 // ==========================================
 // ENDPOINT LOGIN DARI SHEET "Users" SPREADSHEET
@@ -34,22 +47,18 @@ app.post('/api/login', async (req, res) => {
             return res.status(400).json({ status: "error", message: "Username dan password wajib diisi." });
         }
 
-        // Autentikasi menggunakan file credentials.json
-        const auth = new google.auth.GoogleAuth({
-            keyFile: './credentials.json',
-            scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
-        });
+        const auth = createGoogleAuth(['https://www.googleapis.com/auth/spreadsheets.readonly']);
         const client = await auth.getClient();
         const sheets = google.sheets({ version: 'v4', auth: client });
 
         // Tarik data dari Tab/Sheet "Users" (Kolom A sampai C: username, password, role)
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: SPREADSHEET_ID,
-            range: 'Users!A2:C', 
+            range: 'Users!A2:C',
         });
 
         const rows = response.data.values || [];
-        
+
         // Cari user yang cocok berdasarkan username
         let matchedUser = null;
         for (let row of rows) {
@@ -89,11 +98,13 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// FIX 1: Penambahan Error Handling Global
+// ==========================================
+// ENDPOINT INPUT MANUAL (KIRIM KE GOOGLE APPS SCRIPT)
+// ==========================================
 app.post('/api/input-manual', async (req, res) => {
     try {
         const payload = req.body;
-        if (!payload.targetSheet) payload.targetSheet = "MaterialMasuk"; 
+        if (!payload.targetSheet) payload.targetSheet = "MaterialMasuk";
 
         const response = await fetch(GAS_URL, {
             method: 'POST',
@@ -101,10 +112,10 @@ app.post('/api/input-manual', async (req, res) => {
             body: JSON.stringify(payload)
         });
 
-        // FIX: Baca sebagai teks dulu untuk melihat apa yang sebenarnya dikirim Google
-        const textResponse = await response.text(); 
-        
-        // Cek apakah balasan dimulai dengan '<' (tanda file HTML)
+        // Baca sebagai teks dulu untuk melihat apa yang sebenarnya dikirim Google
+        const textResponse = await response.text();
+
+        // Cek apakah balasan dimulai dengan '<' (tanda halaman HTML error)
         if (textResponse.trim().startsWith('<')) {
             throw new Error("Google Apps Script mengembalikan halaman HTML (Error/Login), cek URL dan Izin Akses.");
         }
@@ -119,7 +130,9 @@ app.post('/api/input-manual', async (req, res) => {
     }
 });
 
-// FIX 2: Perbaikan Ekstraksi PDF
+// ==========================================
+// ENDPOINT UPLOAD & EKSTRAKSI PDF
+// ==========================================
 app.post('/api/upload-pdf', upload.single('file'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ status: "error", message: "File PDF tidak terkirim." });
@@ -127,17 +140,16 @@ app.post('/api/upload-pdf', upload.single('file'), async (req, res) => {
         const parsedPdf = await pdfParse(req.file.buffer);
         const text = parsedPdf.text;
 
-        // Menggunakan regex yang lebih fleksibel untuk dokumen resmi
+        // Menggunakan regex yang fleksibel untuk dokumen resmi
         const hasilEkstraksi = {
-            targetSheet: "MaterialMasuk", // Menentukan sheet tujuan
+            targetSheet: "MaterialMasuk",
             tanggal: (text.match(/Tanggal\s*:\s*([^\n\r]+)/i) || [])[1]?.trim() || new Date().toLocaleDateString('id-ID'),
             namaMaterial: (text.match(/Material\s*:\s*([^\n\r]+)/i) || [])[1]?.trim() || "N/A",
             jumlah: parseInt((text.match(/Jumlah\s*:\s*(\d+)/i) || [])[1]) || 0,
             vendor: (text.match(/Vendor\s*:\s*([^\n\r]+)/i) || [])[1]?.trim() || "Tanpa Vendor",
-            // Tambahkan field lain sesuai kebutuhan spreadsheet
         };
 
-        const response = await fetch(GAS_URL, {
+        await fetch(GAS_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(hasilEkstraksi)
@@ -154,10 +166,7 @@ app.post('/api/upload-pdf', upload.single('file'), async (req, res) => {
 // ==========================================
 app.get('/api/top-materials', async (req, res) => {
     try {
-        const auth = new google.auth.GoogleAuth({
-            keyFile: './credentials.json',
-            scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
-        });
+        const auth = createGoogleAuth(['https://www.googleapis.com/auth/spreadsheets.readonly']);
         const client = await auth.getClient();
         const sheets = google.sheets({ version: 'v4', auth: client });
 
@@ -167,7 +176,7 @@ app.get('/api/top-materials', async (req, res) => {
             sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: 'MaterialReturnGudang!A2:N' })
         ]);
 
-        // Helper untuk menghitung murni frekuensi kemunculan baris transaksi per material secara akurat
+        // Hitung frekuensi kemunculan baris transaksi per material
         const helperTopFrequency = (rows, idxNama, idxKode, idxStn) => {
             let counts = {};
             rows.forEach(row => {
@@ -201,6 +210,7 @@ app.get('/api/top-materials', async (req, res) => {
         res.status(500).json({ status: "error", message: error.message });
     }
 });
+
 // ==========================================
 // ENDPOINT CHATBOT MISTRAL AI
 // ==========================================
@@ -211,7 +221,6 @@ app.post('/api/gemini-chat', async (req, res) => {
             return res.status(400).json({ status: "error", message: "Pesan tidak boleh kosong." });
         }
 
-        // Menggunakan model mistral-small-latest yang cepat dan gratis
         const chatResponse = await mistral.chat.complete({
             model: 'mistral-small-latest',
             messages: [{ role: 'user', content: message }],
@@ -226,39 +235,35 @@ app.post('/api/gemini-chat', async (req, res) => {
     }
 });
 
-
 // ==========================================
-// ENDPOINT GET BON PINJAM (URUTAN TERBARU KE TERAKHIR)
+// ENDPOINT GET BON PINJAM (URUTAN TERBARU KE TERLAMA)
 // ==========================================
 app.get('/api/bon-pinjam', async (req, res) => {
     try {
-        const auth = new google.auth.GoogleAuth({
-            keyFile: './credentials.json',
-            scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
-        });
+        const auth = createGoogleAuth(['https://www.googleapis.com/auth/spreadsheets.readonly']);
         const client = await auth.getClient();
         const sheets = google.sheets({ version: 'v4', auth: client });
 
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: SPREADSHEET_ID,
-            range: 'MaterialKeluarUnit!A2:L', 
+            range: 'MaterialKeluarUnit!A2:L',
         });
 
         const rows = response.data.values || [];
-        
+
         const formattedData = [];
         rows.forEach((row, index) => {
             const jenis = row[0] ? row[0].trim().toUpperCase() : '';
-            
+
             // Hanya ambil data yang jenis transaksinya murni "BON PINJAM"
             if (jenis === 'BON PINJAM') {
-                const actualRowIndex = index + 2; 
+                const actualRowIndex = index + 2;
                 const noSpk = row[9] || '-';
                 const keterangan = row[10] || '-';
                 const pekerjaan = row[11] || '-';
 
                 formattedData.push({
-                    rowIndex: actualRowIndex, 
+                    rowIndex: actualRowIndex,
                     noBon: row[8] || `#BON-${index + 1}`,
                     tanggal: row[1] || '-',
                     peminjam: row[7] || 'Vendor / Umum',
@@ -272,7 +277,7 @@ app.get('/api/bon-pinjam', async (req, res) => {
             }
         });
 
-        // URUTKAN: Dari yang terbaru ke terakhir (berdasarkan rowIndex terbesar ke terkecil)
+        // Urutkan dari terbaru ke terlama (rowIndex terbesar ke terkecil)
         formattedData.sort((a, b) => b.rowIndex - a.rowIndex);
 
         res.json({
@@ -287,21 +292,17 @@ app.get('/api/bon-pinjam', async (req, res) => {
 });
 
 // ==========================================
-// ENDPOINT UPDATE BON PINJAM KE TUG 9 (MENGGUNAKAN RESERVASI)
+// ENDPOINT UPDATE BON PINJAM KE TUG 9
 // ==========================================
 app.post('/api/update-bon-pinjam', async (req, res) => {
     try {
-        // Ganti noSpk menjadi reservasi
         const { rowIndex, reservasi, keterangan, pekerjaan } = req.body;
 
         if (!rowIndex || !reservasi || !keterangan || !pekerjaan) {
             return res.status(400).json({ status: "error", message: "Semua data (Reservasi, Keterangan, Pekerjaan) wajib diisi." });
         }
 
-        const auth = new google.auth.GoogleAuth({
-            keyFile: './credentials.json',
-            scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-        });
+        const auth = createGoogleAuth(['https://www.googleapis.com/auth/spreadsheets']);
         const client = await auth.getClient();
         const sheets = google.sheets({ version: 'v4', auth: client });
 
@@ -314,13 +315,12 @@ app.post('/api/update-bon-pinjam', async (req, res) => {
         });
 
         // 2. Update Reservasi (Kolom J), Keterangan (Kolom K), dan Pekerjaan (Kolom L)
-        // Menggunakan string agar format teks rata kiri di spreadsheet
         await sheets.spreadsheets.values.update({
             spreadsheetId: SPREADSHEET_ID,
             range: `MaterialKeluarUnit!J${rowIndex}:L${rowIndex}`,
             valueInputOption: 'USER_ENTERED',
-            requestBody: { 
-                values: [[`'${reservasi}`, String(keterangan), String(pekerjaan)]] 
+            requestBody: {
+                values: [[`'${reservasi}`, String(keterangan), String(pekerjaan)]]
             }
         });
 
@@ -335,9 +335,10 @@ app.post('/api/update-bon-pinjam', async (req, res) => {
     }
 });
 
+// Konfigurasi untuk lingkungan lokal maupun Vercel serverless
 if (process.env.NODE_ENV !== 'production') {
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => console.log(`🚀 Server lokal berjalan di port ${PORT}`));
 }
 
-module.exports = app;
+export default app;
