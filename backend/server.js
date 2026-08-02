@@ -1,5 +1,4 @@
-import dotenv from 'dotenv';
-dotenv.config(); // 1. WAJIB DI BARIS PALING ATAS
+
 
 import express from 'express';
 import cors from 'cors';
