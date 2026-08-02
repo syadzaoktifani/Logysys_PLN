@@ -76,7 +76,7 @@ export default function FormReturn() {
         }
       });
 
-      const response = await fetch("https://logysys-pln.vercel.app/api/login/api/input-manual", {
+      const response = await fetch("https://logysys-pln.vercel.app/api/input-manual", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
