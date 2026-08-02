@@ -111,7 +111,7 @@ export default function FormInput() {
       targetSheet: 'MaterialKeluarUnit' // PENTING: Identitas agar masuk ke sheet yang benar
     };
 
-    const res = await fetch('http://localhost:5000/api/input-manual', {
+    const res = await fetch('https://logysys-pln.vercel.app/api/login/api/input-manual', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
