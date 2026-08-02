@@ -344,4 +344,4 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 // Wajib agar bisa dibaca oleh Vercel Serverless
-module.exports = app;
+export default app;
