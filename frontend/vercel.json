@@ -1,6 +1,8 @@
-
 {
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/api/:match*",
+      "destination": "https://logysys-pln.vercel.app/api/:match*"
+    }
   ]
 }
