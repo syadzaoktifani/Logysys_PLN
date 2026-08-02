@@ -335,10 +335,13 @@ app.post('/api/update-bon-pinjam', async (req, res) => {
     }
 });
 
-// Konfigurasi untuk lingkungan lokal maupun Vercel serverless
+// Jika dijalankan secara lokal (di komputer Anda)
 if (process.env.NODE_ENV !== 'production') {
-    const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => console.log(`🚀 Server lokal berjalan di port ${PORT}`));
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`Server otomatis berjalan di port ${PORT}`);
+  });
 }
 
-export default app;
+// Wajib agar bisa dibaca oleh Vercel Serverless
+module.exports = app;
