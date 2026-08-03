@@ -671,13 +671,13 @@ const handleSaveEdit = async (e) => {
                           <td className="py-4 px-6 text-gray-500">{item.tanggal}</td>
                           <td className="py-4 px-6 font-medium text-gray-900">{item.peminjam}</td>
                           <td className="py-4 px-6 text-gray-600">
-                            <div>{item.material}</div>
-                            {item.noSpk && item.noSpk !== '-' && (
-                              <div className="text-[11px] text-gray-400 mt-0.5">
-                                SPK: {item.noSpk} | Pekerjaan: {item.pekerjaan || '-'}
-                              </div>
-                            )}
-                          </td>
+                          <div>{item.material}</div>
+                          {item.reservasi && item.reservasi !== '-' && (
+                            <div className="text-[11px] text-gray-400 mt-0.5">
+                              Reservasi: {item.reservasi} | Pekerjaan: {item.pekerjaan || '-'}
+                            </div>
+                          )}
+                        </td>
                           <td className="py-4 px-6 text-center font-bold text-gray-900">{item.jumlah}</td>
                           <td className="py-4 px-6 text-center space-y-2">
                             <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
@@ -688,18 +688,19 @@ const handleSaveEdit = async (e) => {
                               {item.status}
                             </span>
                             <div>
-                              <button
-                                onClick={() => {
-                                  setCurrentEditItem(item);
-                                  setFormReservasi(item.reservasi !== '-' ? item.reservasi : ''); // Perbaikan dari setFormSpk
-                                  setFormKeterangan(item.keterangan !== '-' ? item.keterangan : '');
-                                  setFormPekerjaan(item.pekerjaan !== '-' ? item.pekerjaan : '');
-                                  setIsEditModalOpen(true);
-                                }}
-                                className="text-[11px] bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold px-2.5 py-1 rounded-lg border border-blue-200 transition-colors cursor-pointer"
-                              >
-                                ✏️ Lengkapi / Edit
-                              </button>
+                             <button
+                              onClick={() => {
+                                setCurrentEditItem(item);
+                                // Langsung set nilai reservasi dan pekerjaan yang sudah ada di spreadsheet
+                                setFormReservasi(item.reservasi || ''); 
+                                setFormKeterangan(item.keterangan || '');
+                                setFormPekerjaan(item.pekerjaan || ''); 
+                                setIsEditModalOpen(true);
+                              }}
+                              className="text-[11px] bg-blue-50 hover:bg-blue-100 text-blue-600 font-bold px-2.5 py-1 rounded-lg border border-blue-200 transition-colors cursor-pointer"
+                            >
+                              ✏️ Lengkapi / Edit
+                            </button>
                             </div>
                           </td>
                         </tr>
@@ -739,7 +740,7 @@ const handleSaveEdit = async (e) => {
           </div>
         </section>
 
-       {/* ================= MODAL EDIT BON PINJAM MENJADI TUG 9 ================= */}
+      {/* ================= MODAL EDIT BON PINJAM MENJADI TUG 9 ================= */}
 {isEditModalOpen && (
   <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
     <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-gray-200 space-y-4">
@@ -750,11 +751,11 @@ const handleSaveEdit = async (e) => {
 
       <form onSubmit={handleSaveEdit} className="space-y-4 text-xs">
         <div>
-          <label className="block font-bold text-gray-700 mb-1">Nomor Reservasi:</label> {/* Diubah dari Nomor SPK */}
+          <label className="block font-bold text-gray-700 mb-1">Nomor Reservasi:</label>
           <input 
             type="text" 
-            value={formReservasi} // Diubah dari formSpk
-            onChange={(e) => setFormReservasi(e.target.value)} // Diubah dari setFormSpk
+            value={formReservasi} 
+            onChange={(e) => setFormReservasi(e.target.value)} 
             placeholder="Contoh: RES/2026/001" 
             required
             className="w-full bg-gray-50 border border-gray-300 rounded-xl px-3.5 py-2.5 text-xs text-gray-900 focus:outline-none focus:border-blue-500"
@@ -786,7 +787,7 @@ const handleSaveEdit = async (e) => {
         </div>
 
         <div className="bg-blue-50 p-3 rounded-xl border border-blue-100 text-blue-700 text-[11px]">
-          💡 <strong>Catatan:</strong> Jika No. Reservasi, Pekerjaan, dan Keterangan terisi, status otomatis berubah menjadi **TUG 9**.
+          💡 <strong>Catatan:</strong> Nomor Reservasi dan Pekerjaan sudah otomatis terisi dari spreadsheet. Anda cukup melengkapi **Keterangan** untuk mengubah status menjadi **TUG 9**.
         </div>
 
         <div className="flex justify-end gap-2 pt-2">
