@@ -285,7 +285,13 @@ export default function FormInput() {
                     name="jenisTransaksi" value={manualForm.jenisTransaksi} onChange={handleManualChange} disabled={isLoading}
                     options={[
                       { value: "TUG9", label: "TUG9" },
-                      { value: "BON PINJAM", label: "BON PINJAM" }
+                      { value: "BON PINJAM", label: "BON PINJAM" },
+                      { value: "SLIP TF POSTING", label: "SLIP TF POSTING" },
+                      { value: "TUG 9 MANUAL", label: "TUG 9 MANUAL" },
+                      { value: "TUG 8", label: "TUG 8" },
+                      { value: "TUG 10", label: "TUG 10" },
+                      { value: "KIRIM ANTAR UP3", label: "KIRIM ANTAR UP3" },
+                      { value: "PROSES MIMS", label: "PROSES MIMS" },
                     ]}
                   />
                   <InputField 
