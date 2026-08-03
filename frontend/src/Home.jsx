@@ -314,10 +314,10 @@ const handleSaveEdit = async (e) => {
           <div className="absolute inset-0 bg-black/60 z-0"></div>
           <div className="absolute inset-0 flex flex-col items-center justify-center px-4 sm:px-6 z-10">
             <h2 className="text-4xl sm:text-5xl md:text-7xl font-extrabold text-white text-center drop-shadow-lg mb-6 leading-tight transition-all">
-              Platform Team Logistik <br />PLN UP3 Padang
+              Sistem Manajemen Logistik <br />PLN UP3 Padang
             </h2>
             <p className="text-base sm:text-xl text-gray-200 text-center max-w-3xl leading-relaxed">
-              Sistem terpadu untuk pengelolaan transaksi material, Bon Pinjam, TUG9 serta monitoring stok gudang secara realtime.
+              MONITORING MATERIAL MASUK, MATERIAL KELUAR DAN RETUR DELIVERY
             </p>
             <div className="flex gap-2 mt-8">
               {heroImages.map((_, idx) => (
