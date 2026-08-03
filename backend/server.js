@@ -245,9 +245,10 @@ app.get('/api/bon-pinjam', async (req, res) => {
         const client = await auth.getClient();
         const sheets = google.sheets({ version: 'v4', auth: client });
 
+        // Ubah range sampai M agar kolom Pekerjaan (Kolom M) terbaca
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: SPREADSHEET_ID,
-            range: 'MaterialKeluarUnit!A2:L',
+            range: 'MaterialKeluarUnit!A2:M',
         });
 
         const rows = response.data.values || [];
@@ -259,20 +260,20 @@ app.get('/api/bon-pinjam', async (req, res) => {
             // Hanya ambil data yang jenis transaksinya murni "BON PINJAM"
             if (jenis === 'BON PINJAM') {
                 const actualRowIndex = index + 2;
-                const noSpk = row[9] || '-';
-                const keterangan = row[10] || '-';
-                const pekerjaan = row[11] || '-';
+                const reservasiVal = row[9] || '-';   // Kolom J (Reservasi)
+                const keteranganVal = row[10] || '-'; // Kolom K (Keterangan)
+                const pekerjaanVal = row[12] || '-';  // Kolom M (Pekerjaan yang benar, bukan nama orang)
 
                 formattedData.push({
                     rowIndex: actualRowIndex,
                     noBon: row[8] || `#BON-${index + 1}`,
                     tanggal: row[1] || '-',
-                    peminjam: row[7] || 'Vendor / Umum',
+                    peminjam: row[7] || 'Vendor / Umum', // Kembali mengambil Kolom H (Vendor)
                     material: row[3] || 'Nama Material Tidak Ada',
                     jumlah: row[5] || '0',
-                    noSpk: noSpk !== '-' ? noSpk : '',
-                    keterangan: keterangan !== '-' ? keterangan : '',
-                    pekerjaan: pekerjaan !== '-' ? pekerjaan : '',
+                    reservasi: reservasiVal !== '-' ? reservasiVal : '', // Langsung membawa data reservasi dari spreadsheet
+                    keterangan: keteranganVal !== '-' ? keteranganVal : '',
+                    pekerjaan: pekerjaanVal !== '-' ? pekerjaanVal : '',  // Membawa data pekerjaan yang benar
                     status: 'Dipinjam'
                 });
             }
@@ -287,7 +288,7 @@ app.get('/api/bon-pinjam', async (req, res) => {
         });
 
     } catch (error) {
-        console.error("Error Get Bon Pinjam:", error);
+        console.error("Error Get Bon PINJAM:", error);
         res.status(500).json({ status: "error", message: error.message });
     }
 });
@@ -315,13 +316,14 @@ app.post('/api/update-bon-pinjam', async (req, res) => {
             requestBody: { values: [['TUG 9']] }
         });
 
-        // 2. Update Reservasi (Kolom J), Keterangan (Kolom K), dan Pekerjaan (Kolom L)
+        // 2. Update Reservasi (Kolom J), Keterangan (Kolom K), Diambil Oleh (Kolom L - dibiarkan), dan Pekerjaan (Kolom M)
         await sheets.spreadsheets.values.update({
             spreadsheetId: SPREADSHEET_ID,
-            range: `MaterialKeluarUnit!J${rowIndex}:L${rowIndex}`,
+            range: `MaterialKeluarUnit!J${rowIndex}:M${rowIndex}`,
             valueInputOption: 'USER_ENTERED',
             requestBody: {
-                values: [[`'${reservasi}`, String(keterangan), String(pekerjaan)]]
+                // Kolom J (Reservasi), Kolom K (Keterangan), Kolom L (Dilewati/Biarkan), Kolom M (Pekerjaan)
+                values: [[`'${reservasi}`, String(keterangan), '', String(pekerjaan)]]
             }
         });
 
@@ -335,14 +337,6 @@ app.post('/api/update-bon-pinjam', async (req, res) => {
         res.status(500).json({ status: "error", message: error.message });
     }
 });
-
-// Jika dijalankan secara lokal (di komputer Anda)
-if (process.env.NODE_ENV !== 'production') {
-  const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => {
-    console.log(`Server otomatis berjalan di port ${PORT}`);
-  });
-}
 
 // Wajib agar bisa dibaca oleh Vercel Serverless
 export default app;
