@@ -13,7 +13,7 @@ const getCurrentDate = () => {
 };
 
 const initialFormState = {
-  jenisTransaksi: 'TUG9',            
+  jenisTransaksi: 'TUG 9',            
   waktu: getCurrentDate(),           
   kodeMaterial: '',                  
   namaMaterial: '',                  
@@ -284,7 +284,7 @@ export default function FormInput() {
                     label="Jenis Transaksi" required className="md:col-span-4"
                     name="jenisTransaksi" value={manualForm.jenisTransaksi} onChange={handleManualChange} disabled={isLoading}
                     options={[
-                      { value: "TUG9", label: "TUG9" },
+                      { value: "TUG 9", label: "TUG 9" },
                       { value: "BON PINJAM", label: "BON PINJAM" },
                       { value: "SLIP TF POSTING", label: "SLIP TF POSTING" },
                       { value: "TUG 9 MANUAL", label: "TUG 9 MANUAL" },
