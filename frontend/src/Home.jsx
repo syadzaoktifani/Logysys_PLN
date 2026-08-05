@@ -313,7 +313,7 @@ const handleSaveEdit = async (e) => {
           ))}
           <div className="absolute inset-0 bg-black/60 z-0"></div>
           <div className="absolute inset-0 flex flex-col items-center justify-center px-4 sm:px-6 z-10">
-            <h2 className="text-4xl sm:text-5xl md:text-7xl font-extrabold text-white text-center drop-shadow-lg mb-6 leading-tight transition-all">
+            <h2 className="text-3xl sm:text-4xl md:text-6xl font-extrabold text-white text-center drop-shadow-lg mb-6 leading-tight transition-all">
               Sistem Informasi Manajemen Logistik <br />PLN UP3 Padang
             </h2>
             <p className="text-base sm:text-xl text-gray-200 text-center max-w-3xl leading-relaxed">
