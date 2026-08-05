@@ -301,8 +301,8 @@ export default function FormInput() {
                     icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>}
                   />
                   <InputField 
-                    label="Jumlah" type="number" required className="md:col-span-4" min="1"
-                    name="jumlah" value={manualForm.jumlah} onChange={handleManualChange} disabled={isLoading} placeholder="0" 
+                    label="Jumlah" type="text" inputMode="decimal" required className="md:col-span-4"
+                    name="jumlah" value={manualForm.jumlah} onChange={handleManualChange} disabled={isLoading} placeholder="Masukkan Jumlah" 
                   />
 
                   <div className="md:col-span-3">
