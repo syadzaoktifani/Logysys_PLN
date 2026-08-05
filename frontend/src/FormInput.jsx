@@ -4,17 +4,24 @@ import { materialData } from './materialData';
 import logoPLN from "./listrik.png";
 import logoDanantara from "./danantara.png";
 
-const getCurrentDate = () => {
+const getCurrentDateForInput = () => {
   const now = new Date();
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
   const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`; // Format standar untuk input type="date"
+};
+
+const formatDateToDisplay = (dateString) => {
+  if (!dateString) return '';
+  if (dateString.includes('/')) return dateString; // Jika sudah DD/MM/YYYY
+  const [year, month, day] = dateString.split('-');
   return `${day}/${month}/${year}`;
 };
 
 const initialFormState = {
   jenisTransaksi: 'TUG 9',            
-  waktu: getCurrentDate(),           
+  waktu: getCurrentDateForInput(),           
   kodeMaterial: '',                  
   namaMaterial: '',                  
   stn: 'PCS',                               
@@ -105,12 +112,15 @@ export default function FormInput() {
   setStatus({ type: 'loading', msg: 'Mengirim data ke Spreadsheet...' });
 
   try {
-    // Pastikan payload sesuai dengan urutan kolom di Excel
+    // Ubah format tanggal kembali ke DD/MM/YYYY saat dikirim ke backend/spreadsheet
+    const formattedDate = formatDateToDisplay(manualForm.waktu);
+
     const payload = {
       ...manualForm,
-      targetSheet: 'MaterialKeluarUnit' // PENTING: Identitas agar masuk ke sheet yang benar
+      waktu: formattedDate,
+      targetSheet: 'MaterialKeluarUnit' 
     };
-
+  
     const res = await fetch('https://logysys-pln.vercel.app/api/input-manual', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -294,11 +304,10 @@ export default function FormInput() {
                       { value: "PROSES MIMS", label: "PROSES MIMS" },
                     ]}
                   />
+                 {/* INPUT TANGGAL MENGGUNAKAN KALENDER HTML5 */}
                   <InputField 
-                    label="Tanggal Transaksi" required className="md:col-span-4"
+                    label="Tanggal Transaksi" type="date" required className="md:col-span-4"
                     name="waktu" value={manualForm.waktu} onChange={handleManualChange} disabled={isLoading}
-                    placeholder="DD/MM/YYYY"
-                    icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>}
                   />
                   <InputField 
                     label="Jumlah" type="text" inputMode="decimal" required className="md:col-span-4"
