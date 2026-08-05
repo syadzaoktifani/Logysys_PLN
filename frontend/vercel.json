@@ -3,6 +3,10 @@
     {
       "source": "/api/:match*",
       "destination": "https://logysys-pln.vercel.app/api/:match*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
