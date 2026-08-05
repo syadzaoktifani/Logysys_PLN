@@ -260,19 +260,19 @@ const handleSaveEdit = async (e) => {
   return (
     <div className="min-h-screen bg-white flex flex-col font-sans scroll-smooth">
       
-      {/* NAVBAR */}
+        {/* NAVBAR */}
       <nav className="bg-white/95 backdrop-blur-md sticky top-0 z-50 transition-all duration-300 border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 px-4 sm:px-8 py-3">
-          <div className="flex items-center gap-3 sm:gap-4 flex-wrap justify-center md:justify-start">
-            <img src={logoDanantara} alt="Logo Danantara" className="h-10 sm:h-12 object-contain scale-150" />
-            <img src={logoPLN} alt="Logo PLN" className="h-8 sm:h-10 object-contain" />
-            <div className="hidden sm:block border-l border-gray-300 h-10"></div>
-            <div className="text-center md:text-left">
-              <h1 className="text-xl sm:text-2xl font-bold text-blue-900">LOGISYS</h1>
-            </div>
+          
+         {/* BAGIAN KIRI: Logo Danantara (Diperbesar), Pembatas, dan Teks LOGISYS */}
+          <div className="flex items-center gap-3 sm:gap-4">
+            <img src={logoDanantara} alt="Logo Danantara" className="h-16 sm:h-20 object-contain" />
+            <div className="hidden sm:block border-l border-gray-300 h-12"></div>
+            <h1 className="text-lg sm:text-xl font-bold text-blue-900 tracking-wider">LOGISYS</h1>
           </div>
 
-          <div className="hidden lg:flex items-center gap-8 text-gray-600 font-bold text-sm tracking-wider">
+          {/* MENU TENGAH */}
+          <div className="hidden lg:flex items-center gap-6 text-gray-600 font-bold text-xs tracking-wider">
             <a href="#beranda" className="hover:text-blue-600 transition-colors">HOME</a>
             <a href="#layanan" className="hover:text-blue-600 transition-colors">LAYANAN</a>
             <a href="#dashboard" className="hover:text-blue-600 transition-colors">DASHBOARD</a>
@@ -283,17 +283,28 @@ const handleSaveEdit = async (e) => {
             <a href="#artikel" className="hover:text-blue-600 transition-colors">ARTIKEL</a>
           </div>
 
-          <div className="text-center md:text-right hidden md:block">
-            <p className="text-blue-900 font-bold text-sm">PT PLN (Persero)</p>
-            <p className="text-gray-500 text-xs">UP3 Padang</p>
-          </div>
-          {/* Tombol Logout */}
+          {/* BAGIAN KANAN: Logo PLN & Teks PLN di kiri, lalu Tombol Logout paling ujung kanan */}
+          <div className="flex items-center gap-4">
+            {/* Logo PLN & Teks PLN */}
+            <div className="flex items-center gap-3">
+              <img src={logoPLN} alt="Logo PLN" className="h-8 sm:h-10 object-contain" />
+              <div className="text-center md:text-left hidden md:block">
+                <p className="text-blue-900 font-bold text-sm">PT PLN (Persero)</p>
+                <p className="text-gray-500 text-xs">UP3 Padang</p>
+              </div>
+            </div>
+
+            <div className="hidden sm:block border-l border-gray-300 h-8"></div>
+
+            {/* Tombol Logout Paling Ujung Kanan */}
             <button 
               onClick={handleLogout}
-              className="bg-red-500 hover:bg-red-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors shadow-sm"
+              className="bg-red-500 hover:bg-red-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors shadow-sm cursor-pointer"
             >
               LOGOUT
             </button>
+          </div>
+
         </div>
       </nav>
 
