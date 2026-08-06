@@ -21,7 +21,7 @@ const formatDateToDisplay = (dateString) => {
 
 const initialFormState = {
   jenisTransaksi: 'TUG 9',            
-  waktu: getCurrentDateForInput(),           
+  waktu: new Date().toISOString().split('T')[0],           
   kodeMaterial: '',                  
   namaMaterial: '',                  
   stn: 'PCS',                               
