@@ -1277,7 +1277,7 @@ const handleSaveEdit = async (e) => {
                 <div>
                   <h4 className="font-bold text-sm">Asisten Logisys PLN</h4>
                   <p className="text-[10px] text-blue-100 flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span> Online (Gemini AI)
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span> Online (Logisys AI)
                   </p>
                 </div>
               </div>
