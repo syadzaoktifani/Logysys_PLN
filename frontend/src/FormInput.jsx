@@ -148,7 +148,7 @@ export default function FormInput() {
     formData.append('file', selectedFile);
 
     try {
-      const res = await fetch('http://localhost:5000/api/upload-pdf', { method: 'POST', body: formData });
+      const res = await fetch('https://logysys-pln.vercel.app/api/upload-pdf', { method: 'POST', body: formData });
       const result = await res.json();
       if (result.status === 'success') {
         setStatus({ type: 'success', msg: `Ekstraksi sukses. Material "${result.data_terbaca.namaMaterial}" telah direkam.` });
